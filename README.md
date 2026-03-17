@@ -2,8 +2,6 @@
 ---
 
 # 📄 1. README.md
-
-````
 # Employee Management REST API
 
 A simple backend application built using FastAPI to manage employee records with CRUD operations.
@@ -27,8 +25,8 @@ A simple backend application built using FastAPI to manage employee records with
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/employee-api.git
-cd employee-api
+git clone https://github.com/bharathi2807/employee-management-app-python.git
+cd Employee
 ```
 
 ### 2. Create virtual environment
