@@ -1,7 +1,6 @@
 
 
 ---
-```markdown
 # Employee Management REST API
 
 A backend application built using FastAPI to manage employee records with secure, scalable RESTful APIs. This project demonstrates API development, database integration, authentication, and modular backend architecture.
@@ -51,7 +50,7 @@ Authorization: Bearer <token>
 ```bash
 git clone https://github.com/bharathi2807/employee-management-app-python.git
 cd Employee
-````
+```
 
 ### 2. Create virtual environment
 
