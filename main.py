@@ -1,13 +1,24 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from jose import jwt, JWTError
+from pydantic import BaseModel
+
 import models, schemas
 from database import engine, SessionLocal
+from auth import authenticate_user, create_access_token
 
-models.Base.metadata.create_all(bind=engine)
+# -------------------- CONFIG --------------------
+SECRET_KEY = "mysecretkey"
+ALGORITHM = "HS256"
 
+# -------------------- APP INIT --------------------
 app = FastAPI()
 
-# Dependency
+# Create tables
+models.Base.metadata.create_all(bind=engine)
+
+# -------------------- DB DEPENDENCY --------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -15,18 +26,55 @@ def get_db():
     finally:
         db.close()
 
-# Create Employee
+# -------------------- AUTH --------------------
+security = HTTPBearer()
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# -------------------- LOGIN --------------------
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+@app.post("/login")
+def login(data: LoginRequest):
+    user = authenticate_user(data.username, data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = create_access_token({"sub": user["username"]})
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
+
+# -------------------- EMPLOYEE APIs --------------------
+
+# Create Employee (Protected)
 @app.post("/employees", response_model=schemas.EmployeeResponse)
-def create_employee(emp: schemas.EmployeeCreate, db: Session = Depends(get_db)):
+def create_employee(
+    emp: schemas.EmployeeCreate,
+    user=Depends(verify_token),
+    db: Session = Depends(get_db)
+):
     new_emp = models.Employee(**emp.dict())
     db.add(new_emp)
     db.commit()
     db.refresh(new_emp)
     return new_emp
 
-# Get All Employees
+# Get All Employees (Protected)
 @app.get("/employees")
-def get_employees(db: Session = Depends(get_db)):
+def get_employees(
+    user=Depends(verify_token),
+    db: Session = Depends(get_db)
+):
     return db.query(models.Employee).all()
 
 # Get Single Employee
