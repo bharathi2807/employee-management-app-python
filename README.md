@@ -29,7 +29,7 @@ A simple backend application built using FastAPI to manage employee records with
 ```bash
 git clone https://github.com/your-username/employee-api.git
 cd employee-api
-````
+```
 
 ### 2. Create virtual environment
 
